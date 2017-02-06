@@ -1,0 +1,30 @@
+/// 本vm中全部使用KVC赋值，防止readonly修饰。
+/// 使用时必须vm和model中的字段对应，否则无效，类似于model解析NSDictionary。
+///
+/// 目前无法实现绑定层数过多的属性，如果需要，参考：
+/// - (NSString *)lookPoint
+/// {
+///     if (!_lookPoint) {
+///         for (NSDictionary *dict in [self valueForKeyPath:@"pbm.recommended_news"]) {
+///             if (dict && [dict[@"tag"] isEqualToString:@"看点"]) {
+///                 _lookPoint = dict[@"title"];
+///                 break;
+///             }
+///         }
+///     }
+///     return _lookPoint;
+/// }
+///
+/// 当要显示的字段需要做处理时，可以复写：
+/// - (id)pbv_bindViewSetValueFilterForKeyPath:(NSString *)keyPath withValue:(id)value
+/// 来同步更新。
+///
+/// 如果涉及到异步操作时，复写：
+/// - (void)pbv_bindViewSetValueFilterForKeyPath:(NSString *)keyPath withValue:(id)value async:(void (^) (id value))aAsyncBlock
+/// 进行异步更新，异步更新时注意线程的使用，这里是没有管理block在哪个线程中回调，需要自己管理。
+///
+/// 在绑定显示内容时也会区分是同步属性和异步属性之分，同步使用：
+/// - (void)pbv_addBindKeyPathForBindView:(NSString *)aBindViewKeyPath withVMKeyPath:(NSString *)aVModelKeyPath
+/// 异步使用：
+/// - (void)pbv_addBindKeyPathForBindView:(NSString *)aBindViewKeyPath withVMKeyPath:(NSString *)aVModelKeyPath
+/// 一般而言，图片的加载会使用异步绑定，其他基本上都使用同步。具体按照业务需求而定。
